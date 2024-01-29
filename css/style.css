@@ -1,0 +1,92 @@
+body {
+    padding: 0px;
+    margin: 0px;
+    background-color: #7c7c7c;
+}
+
+h1 {
+    text-align: center;
+    font-size: 50px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin: 0;
+}
+
+#main {
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#brick-container {
+    width: 800px;
+    height: 800px;
+    margin: 0px 20px;
+    background-color: #5b86a7;
+    border: 10px solid black;
+    border-radius: 20px;
+    position: relative;
+}
+
+.other-div {
+    width: 200px;
+    height: 600px;
+    margin: 0px 20px;
+    background-color: #29a759;
+    border: 5px solid black;
+    border-radius: 25px;
+}
+
+#paddle {
+    background-color: #414346;
+    position: absolute;
+    border-radius: 2px 2px 15px 15px;
+    border-bottom: 5px solid #565658;
+}
+
+.ball {
+    position: absolute;
+    border-radius: 50%;
+}
+
+#brick-container:after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
+    left: 0;
+    pointer-events: none;
+    background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), #33546e 70%);
+    width: 100%;
+    border-radius: 10px;
+    height: 70px;
+}
+
+#box-info {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 40px;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+}
+
+.brick-1 {
+    position: absolute;
+    border: 2px solid black;
+    background-color: yellow;
+}
+
+.brick-2 {
+    position: absolute;
+    border: 2px solid black;
+    background-color: rgb(255, 153, 0);
+}
+
+.brick-3 {
+    position: absolute;
+    border: 2px solid black;
+    background-color: rgb(255, 30, 0);
+}
