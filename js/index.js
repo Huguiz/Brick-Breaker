@@ -2,13 +2,14 @@
 
 const WINDOWWIDTH = 800;
 const WINDOWHEIGHT = 650;
-const PADDLEWIDTH = 100;
+const DEFAULTPADDLEWIDTH = 100;
 const PADDLEHEIGHT = 15;
 const PADDLEGAPFROMBOTTOM = 100;
 const BALLSIZE = 20;
 const BALLCOLOR = "yellow"
 const BONUSSIZE = 30;
 const BONUSCOLOR = "gray";
+const GUNDISTANCEFROMEDGE = 10;
 
 
 
@@ -77,11 +78,14 @@ class Ball {
             let nextStepY = this.yPosition + this.dy * this.speed;
 
             if (nextStepY < 0) { // Check if the ball touch the ground
-                aliveBallList.forEach((element, index) => {
-                    if (element.ballID === this.ballID) {
-                        aliveBallList.splice(index, 1)
+                let newAliveBallList = aliveBallList.filter((element) => {
+                    if (element.ballID !== this.ballID) {
+                        return element;
                     }
                 })
+
+                aliveBallList = [...newAliveBallList]
+
                 ballDied()
                 this.ballElm.remove()
                 clearInterval(this.loop);
@@ -94,10 +98,10 @@ class Ball {
                     this.dy = -this.dy;
                 }
 
-                if (this.xPosition >= paddleObject.xPosition - BALLSIZE + 1 && this.xPosition <= paddleObject.xPosition + PADDLEWIDTH - 1 && this.yPosition <= PADDLEGAPFROMBOTTOM + PADDLEHEIGHT + 1 && this.yPosition >= PADDLEGAPFROMBOTTOM + PADDLEHEIGHT - 3) { // Check if the ball touch the top border of the paddle
+                if (this.xPosition >= paddleObject.xPosition - BALLSIZE + 1 && this.xPosition <= paddleObject.xPosition + paddleObject.width - 1 && this.yPosition <= PADDLEGAPFROMBOTTOM + PADDLEHEIGHT + 1 && this.yPosition >= PADDLEGAPFROMBOTTOM + PADDLEHEIGHT - 3) { // Check if the ball touch the top border of the paddle
                     let receivedZone = paddleObject.xPosition + paddleObject.width - this.xPosition;
                     
-                    let actualPaddleReceipt = PADDLEWIDTH + BALLSIZE - 1
+                    let actualPaddleReceipt = paddleObject.width + BALLSIZE - 1
 
                     let mappedX = (receivedZone - actualPaddleReceipt) * (30 + 30) / (1 - actualPaddleReceipt) - 30;
 
@@ -109,7 +113,7 @@ class Ball {
                     if (this.dx > 0) {
                         this.dx = -this.dx;
                     }
-                } else if (this.xPosition >= paddleObject.xPosition + PADDLEWIDTH - 30 && this.xPosition <= paddleObject.xPosition + PADDLEWIDTH + 1 && this.yPosition >= PADDLEGAPFROMBOTTOM - BALLSIZE && this.yPosition <= PADDLEGAPFROMBOTTOM + PADDLEHEIGHT - 3) { // Check if the ball touch the right border of the paddle
+                } else if (this.xPosition >= paddleObject.xPosition + paddleObject.width - 30 && this.xPosition <= paddleObject.xPosition + paddleObject.width + 1 && this.yPosition >= PADDLEGAPFROMBOTTOM - BALLSIZE && this.yPosition <= PADDLEGAPFROMBOTTOM + PADDLEHEIGHT - 3) { // Check if the ball touch the right border of the paddle
                     if (this.dx < 0) {
                         this.dx = -this.dx;
                     }
@@ -186,12 +190,20 @@ class Brick {
                     aliveBonusList.push(new Bonus(this.xPosition + this.width / 2 - BONUSSIZE / 2, this.yPosition + this.height / 2 - BONUSSIZE / 2, element[1]))
                 }
             })
-            this.brickElm.remove()
-            aliveBrickList.forEach((element, index) => {
-                if (element.brickID === this.brickID) {
-                    aliveBrickList.splice(index, 1)
+            
+
+            let newAliveBrickList = aliveBrickList.filter((element) => {
+                if (element.brickID !== this.brickID) {
+                    return element;
                 }
             })
+
+            aliveBrickList = [...newAliveBrickList]
+
+            this.brickElm.remove()
+
+
+
             nextLevel()
         } else if (this.level === 1) {
             modifyScore(5)
@@ -221,7 +233,7 @@ class Paddle {
     constructor(xPosition, width) {
         this.xPosition = xPosition;
         this.width = width;
-        paddleElm.style.width = PADDLEWIDTH + "px";
+        paddleElm.style.width = DEFAULTPADDLEWIDTH + "px";
         paddleElm.style.height = (PADDLEHEIGHT - 5) + "px"; // substract the border bottom width
         paddleElm.style.bottom = PADDLEGAPFROMBOTTOM + "px";
         this.printPaddle();
@@ -255,6 +267,23 @@ class Bonus {
         this.bonusElm.style.width = BONUSSIZE + "px";
         this.bonusElm.style.height = BONUSSIZE + "px";
         this.bonusElm.style.backgroundColor = BONUSCOLOR;
+
+
+
+        this.bonusImgElm = document.createElement("img");
+
+        if (this.type === 0) { // +1 life
+            this.bonusImgElm.src = "./img/heart-plus.png"
+        } else if (this.type === 1) { // +1 ball
+            this.bonusImgElm.src = "./img/ball-plus.png"
+        } else if (this.type === 2) { // extend the paddle
+            this.bonusImgElm.src = "./img/paddle-expand.png"
+        } else if (this.type === 3) { // shootgun for 4 sec
+            this.bonusImgElm.src = "./img/machine-gun.png"
+        }
+
+        this.bonusElm.appendChild(this.bonusImgElm);
+
         gameContainerElm.appendChild(this.bonusElm);
 
         this.bonusElm.style.left = this.xPosition + "px";
@@ -272,23 +301,30 @@ class Bonus {
     calculNextMove() {
         this.yPosition -= 2;
         if (this.xPosition < paddleObject.xPosition + paddleObject.width && this.xPosition + BONUSSIZE > paddleObject.xPosition && this.yPosition < PADDLEGAPFROMBOTTOM + PADDLEHEIGHT && this.yPosition + BONUSSIZE > PADDLEGAPFROMBOTTOM) {
-            clearInterval(this.loop)
-            this.bonusElm.remove()
-            aliveBonusList.forEach((element, index) => {
-                if (element.bonusID === this.bonusID) {
-                    aliveBonusList.splice(index, 1)
+
+            applyBonus(this.type)
+
+            let newAliveBonusList = aliveBonusList.filter((element) => {
+                if (element.bonusID !== this.bonusID) {
+                    return element;
                 }
             })
-            console.log(this.type)
-            // to continue...
+
+            aliveBonusList = [...newAliveBonusList]
+
+            this.bonusElm.remove()
+            clearInterval(this.loop);
+
         } else if (this.yPosition <= 0) {
-            clearInterval(this.loop)
-            this.bonusElm.remove()
-            aliveBonusList.forEach((element, index) => {
-                if (element.bonusID === this.bonusID) {
-                    aliveBonusList.splice(index, 1)
+            let newAliveBonusList = aliveBonusList.filter((element) => {
+                if (element.bonusID !== this.bonusID) {
+                    return element;
                 }
             })
+            aliveBonusList = [...newAliveBonusList]
+
+            this.bonusElm.remove()
+            clearInterval(this.loop);
         } else {
             this.printBonus();
         }
@@ -318,7 +354,7 @@ restartBtnElm.addEventListener("click", () => {
 
 // PADDLE INITIALIZATION
 
-const paddleObject = new Paddle(WINDOWWIDTH / 2 - PADDLEWIDTH / 2, PADDLEWIDTH);
+const paddleObject = new Paddle(WINDOWWIDTH / 2 - DEFAULTPADDLEWIDTH / 2, DEFAULTPADDLEWIDTH);
 
 
 
@@ -354,9 +390,9 @@ document.addEventListener("keyup", (event) => {
 
 // GAME VARIABLE INITIALIZATION
 
-const aliveBallList = [];
-const aliveBrickList = [];
-const aliveBonusList = [];
+let aliveBallList = [];
+let aliveBrickList = [];
+let aliveBonusList = [];
 let bonusBrickLink = [];
 let brickID = 1;
 let ballID = 1;
@@ -366,10 +402,53 @@ let score = 0;
 let timer;
 let timerValue = 0;
 let currentGameLevel = 0;
+let gunActive = false;
 
 
 
 // GAME FUNCTION INITIALIZATION
+
+function applyBonus(bonusType) {
+    console.log(bonusType)
+    if (bonusType === 0) { // +1 life
+        numberOfLive += 1;
+        printLives();
+    } else if (bonusType === 1) { // +1 ball
+        aliveBallList.push(new Ball(Math.floor(Math.random() * 600 + 100), PADDLEGAPFROMBOTTOM + 50, 10, Math.random() * 40 - 20, 2, false));
+    } else if (bonusType === 2) { // extend the paddle
+        paddleObject.width += 40
+        if (paddleObject.xPosition > WINDOWWIDTH - paddleObject.width) {
+            paddleObject.xPosition = WINDOWWIDTH - paddleObject.width;
+        }
+        paddleObject.printPaddle()
+    } else if (bonusType === 3) { // shootgun for 4 sec
+        if (!gunActive) {
+            gunActive = true;
+            const leftGun = document.createElement("div");
+            const rightGun = document.createElement("div");
+            leftGun.classList.add("gun");
+            rightGun.classList.add("gun");
+
+            leftGun.style.bottom = (PADDLEGAPFROMBOTTOM + PADDLEHEIGHT) + "px"
+            rightGun.style.bottom = (PADDLEGAPFROMBOTTOM + PADDLEHEIGHT) + "px"
+
+            gameContainerElm.appendChild(leftGun);
+            gameContainerElm.appendChild(rightGun);
+
+            const gunTimerInterval = setInterval(() => {
+                leftGun.style.left = (paddleObject.xPosition + GUNDISTANCEFROMEDGE) + "px";
+                rightGun.style.left = (paddleObject.xPosition + paddleObject.width - GUNDISTANCEFROMEDGE - 15) + "px";
+            }, 10)
+
+            setTimeout(() => {
+                clearInterval(gunTimerInterval)
+                leftGun.remove()
+                rightGun.remove()
+                gunActive = false;
+            }, 3500)
+        }
+    }
+}
 
 function modifyScore(number) {
     score += number;
@@ -413,15 +492,18 @@ function gameOver() {
         })
         
     }
+
     if (aliveBonusList.length) {
         aliveBonusList.forEach((element) => {
             element.bonusElm.remove()
             clearInterval(element.loop);
         })
     }
+
     stopTimer()
     restartTxtElm.innerHTML = "Game over !"
     gameOverElm.style.visibility = "visible"
+   
     aliveBallList.splice(0, aliveBallList.length)
     aliveBrickList.splice(0, aliveBrickList.length)
     aliveBonusList.splice(0, aliveBonusList.length)
@@ -436,18 +518,25 @@ function gameOver() {
 
 function nextLevel() {
     if (!aliveBrickList.length) {
-        aliveBallList.forEach((element) => {
-            element.ballElm.remove();
-            clearInterval(element.loop);
-        })
+        if (aliveBallList.length) {
+            aliveBallList.forEach((element) => {
+                element.ballElm.remove()
+                clearInterval(element.loop);
+            })
+            
+        }
+        
+        if (aliveBonusList.length) {
+            aliveBonusList.forEach((element) => {
+                element.bonusElm.remove()
+                clearInterval(element.loop);
+            })
+        }
 
-        aliveBonusList.forEach((element) => {
-            element.bonusElm.remove();
-            clearInterval(element.loop);
-        })
+        aliveBallList.splice(0, aliveBallList.length)
+        aliveBonusList.splice(0, aliveBonusList.length)
 
-        aliveBallList.splice(0, aliveBallList.length);
-        aliveBonusList.splice(0, aliveBonusList.length);
+
 
         stopTimer();
         bonusID = 1;
@@ -478,7 +567,8 @@ function initGame() {
     printLevel();
     startTimer();
 
-    paddleObject.xPosition = WINDOWWIDTH / 2 - PADDLEWIDTH / 2;
+    paddleObject.xPosition = WINDOWWIDTH / 2 - DEFAULTPADDLEWIDTH / 2;
+    paddleObject.width = DEFAULTPADDLEWIDTH;
     paddleObject.printPaddle();
     
 
@@ -491,6 +581,8 @@ function initGame() {
     if (numberOfBonus < 1) {
         numberOfBonus = 1;
     }
+
+    bonusBrickLink.splice(0, bonusBrickLink.length)
 
     for (let i = 0; i < numberOfBonus; i++) {
         let doubleDetected = true;
@@ -513,7 +605,8 @@ function initGame() {
         }
     }
 
-    // new Bonus(300, 500, 1)
+    aliveBonusList.push(new Bonus(380, 200, 2))
+    aliveBonusList.push(new Bonus(380, 400, 3))
 
     // aliveBallList.push(new Ball(490, PADDLEGAPFROMBOTTOM + 140, 0, -1, 2 , false)); // balle de droite
     // aliveBallList.push(new Ball(370, PADDLEGAPFROMBOTTOM + 140, 0, 1, 2 , false)); // balle de gauche

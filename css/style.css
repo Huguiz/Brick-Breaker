@@ -159,11 +159,20 @@ img {
 }
 
 .bonus {
-    background-color: blue;
-    border-radius: 10px;
+    position: absolute;
+    border: black 1px solid;
+    border-radius: 8px;
+    display: flex;
 }
 
-.bonus {
+.bonus img {
+    width: 85%;
+}
+
+.gun {
     position: absolute;
-    border: black 2px solid;
+    width: 15px;
+    height: 35px;
+    background-color: rgb(97, 97, 97);
+    border-radius: 5px 5px 0px 0px;
 }
