@@ -497,34 +497,34 @@ let maxAccy = 0;
 
 function playSound(number) {
     if (number === 0) { //ball tap on edge or brick
-        let audio = new Audio('../sound/ball.wav');
+        let audio = new Audio('./sound/ball.wav');
         audio.play();
     } else if (number === 1) { //ball tap the paddle
-        let audio = new Audio('../sound/ballonpaddle.wav');
+        let audio = new Audio('./sound/ballonpaddle.wav');
         audio.play();
     } else if (number === 2) { // loose one life
-        let audio = new Audio('../sound/loose1life.wav');
+        let audio = new Audio('./sound/loose1life.wav');
         audio.play();
     } else if (number === 3) { // game over
-        let audio = new Audio('../sound/fail.wav');
+        let audio = new Audio('./sound/fail.wav');
         audio.play();
     } else if (number === 4) { // bullet
-        let audio = new Audio('../sound/bullet.wav');
+        let audio = new Audio('./sound/bullet.wav');
         audio.play();
     } else if (number === 5) { // +1 ball
-        let audio = new Audio('../sound/oneball.wav');
+        let audio = new Audio('./sound/oneball.wav');
         audio.play();
     } else if (number === 6) { // +1 life
-        let audio = new Audio('../sound/onelife.wav');
+        let audio = new Audio('./sound/onelife.wav');
         audio.play();
     } else if (number === 7) { // paddle extanded
-        let audio = new Audio('../sound/paddleextand.wav');
+        let audio = new Audio('./sound/paddleextand.wav');
         audio.play();
     } else if (number === 8) { // win
-        let audio = new Audio('../sound/win.wav');
+        let audio = new Audio('./sound/win.wav');
         audio.play();
     } else if (number === 9) { // bullet hit
-        let audio = new Audio('../sound/hit.wav');
+        let audio = new Audio('./sound/hit.wav');
         audio.play();
     }   
 }
